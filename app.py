@@ -1,4 +1,5 @@
 import json
+import yaml
 import logging
 import os
 import secrets
@@ -7,6 +8,7 @@ from flask import Flask, render_template, request, redirect
 from flask_cors import CORS
 from utils import success_json_response
 from security import secured
+from error_handler import error_handler, BadRequestException
 
 app = Flask(__name__,
             static_url_path="/",
@@ -16,6 +18,9 @@ CORS(app)
 # set logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s')
 logger = logging.getLogger(__name__)
+
+# globals
+QUESTIONS = {}
 
 @app.route("/")
 def gotoindex():
@@ -52,7 +57,23 @@ def root(username, groups):
 
 @app.route("/api/questions")
 def get_questions():
-  pass
+  return success_json_response(QUESTIONS)
+
+@app.route("/api/response", methods=["POST"])
+@error_handler
+@secured
+def response(username, groups):
+  if not request.json:
+    raise BadRequestException("Request should be JSON")
+
+def check_env():
+  global QUESTIONS
+  if "QUESTIONS" not in os.environ:
+    logger.error("Missing QUESTIONS environment variable")
+    exit(-1)
+  else:
+    QUESTIONS = yaml.load(os.environ["QUESTIONS"])
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0")
+  check_env()
+  app.run(debug=True, host="0.0.0.0")
