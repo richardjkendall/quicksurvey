@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] (%(t
 logger = logging.getLogger(__name__)
 
 # globals
-QUESTIONS = {}
+CONFIG = {}
 
 @app.route("/")
 def gotoindex():
@@ -57,7 +57,13 @@ def root(username, groups):
 
 @app.route("/api/questions")
 def get_questions():
-  return success_json_response(QUESTIONS)
+  return success_json_response(CONFIG["questions"])
+
+@app.route("/api/config")
+def get_config():
+  return success_json_response({
+    "title": CONFIG["title"]
+  })
 
 @app.route("/api/response", methods=["POST"])
 @error_handler
@@ -67,12 +73,12 @@ def response(username, groups):
     raise BadRequestException("Request should be JSON")
 
 def check_env():
-  global QUESTIONS
-  if "QUESTIONS" not in os.environ:
-    logger.error("Missing QUESTIONS environment variable")
+  global CONFIG
+  if "CONFIG" not in os.environ:
+    logger.error("Missing CONFIG environment variable")
     exit(-1)
   else:
-    QUESTIONS = yaml.load(os.environ["QUESTIONS"])
+    CONFIG = yaml.load(os.environ["CONFIG"])
 
 if __name__ == "__main__":
   check_env()

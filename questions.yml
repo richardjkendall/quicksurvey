@@ -1,3 +1,6 @@
+title: Team Engagement Survey
+userIdentifer: X-Remote-User
+uniqueness: "{user}-{year}-{week}"
 questions:
   - id: happyorsad
     text: How are you feeling today?
